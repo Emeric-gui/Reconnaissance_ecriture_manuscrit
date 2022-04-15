@@ -33,3 +33,4 @@ fenetre.activateWindow()
 #     traitement = Traitement(cheminImage)
 #     traitement.pretraitement()
 #     traitement.show_image()
+
