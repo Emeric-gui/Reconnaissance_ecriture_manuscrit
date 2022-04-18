@@ -10,6 +10,15 @@ class Traitement:
         self.__directory_words = "words/"
         self.__directory_letters = "letters/"
 
+        if not os.path.exists("sub_images"):
+            os.mkdir("sub_images")
+
+        if not os.path.exists("words"):
+            os.mkdir("words")
+
+        if not os.path.exists("letters"):
+            os.mkdir("letters")
+
         self.__cheminImage = cheminImage
         self.__name_image = None
 
