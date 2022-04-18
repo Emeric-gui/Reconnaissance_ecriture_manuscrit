@@ -61,12 +61,17 @@ class Classifier:
         print("Test loss:", score[0])
         print("Test accuracy:", score[1])
 
+    def __save_model(self):
+        """Save the model in order to use it later"""
+        self.__model.save('archi_finale.h5')
+
     def makeCNN(self):
         self.__scales_images()
         self.__convert_classes()
         self.__set_model()
         self.__classifier_summary()
         self.__fit_generator()
+        self.__save_model()
         self.__predict_generator()
 
 
