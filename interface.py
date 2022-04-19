@@ -71,12 +71,39 @@ class Fenetre:
             liste_images = os.listdir(repertoire)
             i = 1
 
+            len_repertoire = len(liste_images)
+            num_image = 0
+
+            texte_ligne = ""
+            ligne = 1
+            mot = 1
+            lettre = 1
+
             # Parcours de toutes les images et traitement sur chacune d'elles
             for str_image in liste_images:
+                num_image +=1
                 print("Image : {0}".format(str_image))
+
+                # On récupère l'identifiant de l'image, permet de savoir sur quelle ligne, mot et lettre nous sommes
+                temp_str_image = str_image.split(".")[0]
+                str_image_split = temp_str_image.split("_")
+                num_ligne = int(str_image_split[1])
+                num_mot = int(str_image_split[2])
+
+                if num_ligne != ligne:
+                    texte_ligne += "."
+                    mydoc.add_paragraph(texte_ligne)
+                    texte_ligne = ""
+                    ligne += 1
+                elif num_mot != mot:
+                    texte_ligne += " "
+                    mot += 1
+
                 image = cv2.imread(repertoire+"/"+str_image)
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                texte = self.__reseau.reality(image)
-                mydoc.add_paragraph(str(texte))
+                texte_ligne += self.__reseau.reality(image)
 
+                # Check si on est a la derniere image du dossier lettres, si ou i
+                if num_image == len_repertoire:
+                    mydoc.add_paragraph(texte_ligne)
         return mydoc

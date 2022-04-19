@@ -134,7 +134,6 @@ class Classifier:
         self.__model.summary()
         # plot_model(self.__model)
 
-
     def __fit_generator(self):
         batch_size = 1024
         epochs = 15
