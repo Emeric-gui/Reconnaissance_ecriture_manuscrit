@@ -47,13 +47,15 @@ class Fenetre:
         # on apply ici la fonction de traitement de l'image
         self.__applyTraitement(self.__filename)
         mydoc = docx.Document()  # on ouvre le word / le crée s'il existe pas
-        # mydoc.add_paragraph("test")  # on écrit dedan (a remplacer par les vrais lettres
         mydoc = self.__feed_word(mydoc)
         champs_chemin = self.__filename.split("/")
         finChemin = champs_chemin[len(champs_chemin) - 1].split(".")[0]
         wordname = finChemin+".docx"
         path = "/"
         mydoc.save(wordname)
+        letters = os.listdir("letters")
+        for image in letters:
+            os.remove("letters/" + image)
         e2 = Label(self.__window, text=wordname)
         e2.grid(row=6, column=1)
         print("Document fini")
