@@ -7,7 +7,7 @@
   
   
 ## 2. Prérequis
-Python 3.9
+Python 3.9 <br>
 packages : 
 - pyhton-docx
 - opencv-python
