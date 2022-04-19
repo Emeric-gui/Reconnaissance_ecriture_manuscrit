@@ -6,9 +6,16 @@
   dans un fichier.
   
   
+## 2. Prérequis
+Python 3.9
+packages : 
+- pyhton-docx
+- opencv-python
+- extra-keras-dataset
+- tensorflow
+- keras
   
-  
-## 2. Auteurs
+## 3. Auteurs
   Emeric GUICHET<br>
   Sylène MOREAU<br>
   Thibaut DUPUIS
