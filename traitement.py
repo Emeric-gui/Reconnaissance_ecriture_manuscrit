@@ -27,8 +27,7 @@ class Traitement:
         self.__image_threshold = None
         self.__image_contour = None
 
-        fin_chemin = self.__cheminImage.split("/")[1]
-        self.__name_image = fin_chemin.split(".")[0]
+        self.__name_image = "image"
 
         self.__image_couleur = cv2.imread(self.__cheminImage)
 

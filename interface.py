@@ -49,7 +49,9 @@ class Fenetre:
         mydoc = docx.Document()  # on ouvre le word / le crée s'il existe pas
         # mydoc.add_paragraph("test")  # on écrit dedan (a remplacer par les vrais lettres
         mydoc = self.__feed_word(mydoc)
-        wordname = "NewDoc.docx"
+        champs_chemin = self.__filename.split("/")
+        finChemin = champs_chemin[len(champs_chemin) - 1].split(".")[0]
+        wordname = finChemin+".docx"
         path = "/"
         mydoc.save(wordname)
         e2 = Label(self.__window, text=wordname)
@@ -81,7 +83,7 @@ class Fenetre:
 
             # Parcours de toutes les images et traitement sur chacune d'elles
             for str_image in liste_images:
-                num_image +=1
+                num_image += 1
                 print("Image : {0}".format(str_image))
 
                 # On récupère l'identifiant de l'image, permet de savoir sur quelle ligne, mot et lettre nous sommes
