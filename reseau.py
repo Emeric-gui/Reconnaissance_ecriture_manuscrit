@@ -1,6 +1,10 @@
 import os.path
 
+import cv2
 import numpy as np
+import matplotlib.pyplot as plt
+
+
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -90,9 +94,16 @@ class Classifier:
         if not os.path.exists(name_model):
             (self.__x_train, self.__y_train), (self.__x_test, self.__y_test) = emnist.load_data(
                     type='byclass')
+            # self.__align_images()
             self.makeCNN()
         else:
             self.load_model(name_model)
+
+    def __plot_images(self):
+        for image in self.__x_train:
+            cv2.imshow("window", image)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
     def __scales_images(self):
         # Scale images to the [0, 1] range
@@ -116,8 +127,8 @@ class Classifier:
                 layers.MaxPooling2D(pool_size=(2, 2)),
                 layers.Dropout(0.5),
                 layers.Conv2D(128, kernel_size=(3, 3), padding="valid", activation="relu"),
-                layers.Conv2D(128, kernel_size=(3, 3), strides=(1, 1), activation="relu"),
-                layers.Conv2D(128, kernel_size=(3, 3), strides=(1, 1), activation="relu"),
+                # layers.Conv2D(128, kernel_size=(3, 3), strides=(1, 1), activation="relu"),
+                # layers.Conv2D(128, kernel_size=(3, 3), strides=(1, 1), activation="relu"),
                 layers.Conv2D(128, kernel_size=(3, 3), activation="relu"),
                 # layers.Conv2D(64, kernel_size=(3, 3), strides=(1, 1), activation="relu"),
                 layers.MaxPooling2D(pool_size=(2, 2)),

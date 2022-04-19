@@ -236,7 +236,7 @@ class Traitement:
         result = img_couleur.copy()
 
         img_gray = cv2.cvtColor(img_couleur.copy(), cv2.COLOR_BGR2GRAY)
-        img_threshold = cv2.threshold(img_gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+        img_threshold = cv2.threshold(img_gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
 
         increment = 1
         for c in cntrs:
@@ -264,8 +264,8 @@ class Traitement:
         :param image:
         :return: retourne l'image
         """
-        white = [255, 255, 255]
-        replicate = cv2.copyMakeBorder(image, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=white)
+        black = [0, 0, 0]
+        replicate = cv2.copyMakeBorder(image, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=black)
         return replicate
 
     def __traitement_word(self, word_image_title, width, height):
