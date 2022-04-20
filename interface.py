@@ -126,5 +126,6 @@ class Fenetre:
 
                 # Check si on est a la derniere image du dossier lettres, si ou i
                 if num_image == len_repertoire:
+                    texte_ligne += "."
                     mydoc.add_paragraph(texte_ligne)
         return mydoc
