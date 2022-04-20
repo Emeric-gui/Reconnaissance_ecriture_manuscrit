@@ -90,7 +90,7 @@ class Classifier:
             61: "z"
         }
 
-        name_model = "archi_finale.h5"
+        name_model = "cnn.h5"
         if not os.path.exists(name_model):
             (self.__x_train, self.__y_train), (self.__x_test, self.__y_test) = emnist.load_data(
                     type='byclass')
@@ -127,10 +127,9 @@ class Classifier:
                 layers.MaxPooling2D(pool_size=(2, 2)),
                 layers.Dropout(0.5),
                 layers.Conv2D(128, kernel_size=(3, 3), padding="valid", activation="relu"),
-                # layers.Conv2D(128, kernel_size=(3, 3), strides=(1, 1), activation="relu"),
-                # layers.Conv2D(128, kernel_size=(3, 3), strides=(1, 1), activation="relu"),
+                layers.Conv2D(128, kernel_size=(3, 3), strides=(1, 1), activation="relu"),
+                layers.Conv2D(128, kernel_size=(3, 3), strides=(1, 1), activation="relu"),
                 layers.Conv2D(128, kernel_size=(3, 3), activation="relu"),
-                # layers.Conv2D(64, kernel_size=(3, 3), strides=(1, 1), activation="relu"),
                 layers.MaxPooling2D(pool_size=(2, 2)),
                 layers.Flatten(),
                 layers.Dropout(0.5),
@@ -176,6 +175,7 @@ class Classifier:
         """Apply this function if the model is already train"""
         self.__model = load_model(name_model)
 
+
     def __resize_image(self, image):
         image = np.expand_dims(image, 0)
         image = np.expand_dims(image, -1)
@@ -191,6 +191,35 @@ class Classifier:
         """Va servir de fonction pour les prédictions"""
         image = self.__resize_image(image)
         pred = self.__model.predict(image)
-        im_class = np.argmax(pred[0], axis=-1)
-        print(self.__dict_label.get(im_class))
-        return self.__dict_label.get(im_class)
+        pred_max = np.argmax(pred[0], axis=-1)
+        pourcent_max = np.amax(pred[0], axis=-1)*100
+
+        pred_delete_max = np.delete(pred[0], pred_max)
+        pred_max_2 = np.argmax(pred_delete_max, axis=-1)
+        pourcent_max_2 = np.amax(pred_delete_max, axis=-1)*100
+
+        pred_delete_max_2 = np.delete(pred_delete_max, pred_max_2)
+        pred_max_3 = np.argmax(np.delete(pred_delete_max_2, pred_max_2), axis=-1)
+        pourcent_max_3 = np.amax(pred_delete_max_2, axis=-1)*100
+
+        pred_delete_max_3 = np.delete(pred_delete_max_2, pred_max_3)
+        pred_max_4 = np.argmax(np.delete(pred_delete_max_3, pred_max_3), axis=-1)
+        pourcent_max_4 = np.amax(pred_delete_max_3, axis=-1)*100
+
+        pred_delete_max_4 = np.delete(pred_delete_max_3, pred_max_4)
+        pred_max_5 = np.argmax(np.delete(pred_delete_max_4, pred_max_4), axis=-1)
+        pourcent_max_5 = np.amax(pred_delete_max_4, axis=-1)*100
+
+
+        val_retour = self.__dict_label.get(pred_max)
+        val_retour_2 = self.__dict_label.get(pred_max_2)
+        val_retour_3 = self.__dict_label.get(pred_max_3)
+        val_retour_4 = self.__dict_label.get(pred_max_4)
+        val_retour_5 = self.__dict_label.get(pred_max_5)
+        print("retour 1 : {0} | {1} %".format(val_retour, pourcent_max))
+        print("retour 2 : {0} | {1} %".format(val_retour_2, pourcent_max_2))
+        print("retour 3 : {0} | {1} %".format(val_retour_3, pourcent_max_3))
+        print("retour 4 : {0} | {1} %".format(val_retour_4, pourcent_max_4))
+        print("retour 5 : {0} | {1} %".format(val_retour_5, pourcent_max_5))
+
+        return val_retour

@@ -31,17 +31,21 @@ class Fenetre:
         file_types = [('Images', '*.jpg;*.png;*.jpeg'),
                       ('All', '*.*')]  # type of files to select
         self.__filename = tk.filedialog.askopenfilename(title="Choisir une image", filetypes=file_types)
-
+        img = None
         # on va ensuite afficher l'images choisie
-        img = Image.open(self.__filename)
-        img = img.resize((200, 200))  # new width & height
-        img = ImageTk.PhotoImage(img)
-        e1 = Label(image=img)
-        e1.image = img
-        e1.grid(row=4, column=1)
+        try:
+            img = Image.open(self.__filename)
+            img = img.resize((200, 200))  # new width & height
+            img = ImageTk.PhotoImage(img)
+            e1 = Label(image=img)
+            e1.image = img
+            e1.grid(row=4, column=1)
+            b2 = tk.Button(self.__window, text='Transformer en Word', width=20, command=lambda: self.__imgToTxt())
+            b2.grid(row=5, column=1)
+        except AttributeError:
+            print("Pas de fichier envoyé")
 
-        b2 = tk.Button(self.__window, text='Transformer en Word', width=20, command=lambda: self.__imgToTxt())
-        b2.grid(row=5, column=1)
+
 
     def __imgToTxt(self):
         # on apply ici la fonction de traitement de l'image
@@ -83,6 +87,9 @@ class Fenetre:
             mot = 1
             lettre = 1
 
+            # debut_ligne = True
+            # in_word = False
+
             # Parcours de toutes les images et traitement sur chacune d'elles
             for str_image in liste_images:
                 num_image += 1
@@ -99,9 +106,14 @@ class Fenetre:
                     mydoc.add_paragraph(texte_ligne)
                     texte_ligne = ""
                     ligne += 1
+                    # debut_ligne = True
                 elif num_mot != mot:
                     texte_ligne += " "
                     mot += 1
+                    # in_word = False
+                # elif num_image > 1:
+                    # debut_ligne =
+                    # in_word =
 
                 image = cv2.imread(repertoire+"/"+str_image)
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

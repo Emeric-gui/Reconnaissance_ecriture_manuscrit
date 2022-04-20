@@ -1,7 +1,10 @@
 import os
+
+import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 import matplotlib.pyplot as plot
+import tensorflow as tf
 
 
 class Traitement:
@@ -48,10 +51,17 @@ class Traitement:
                                                                      self.__directory_sub_images)
 
         # Sous-images
+        self.__plot_images('sub_images')
         sub_images = os.listdir(self.__directory_sub_images)
         for sub_image_tile in sub_images:
             self.__traitement_sub(sub_image_tile, width, height)
             os.remove(self.__directory_sub_images + sub_image_tile)
+
+        # Afficher toutes les lettres dans un plot
+        """Vu qu'on a trouvé toutes les lettres, on va afficher le tout dans un plot 
+            pour pouvoir les supprimer du dossier
+        """
+        self.__plot_images('letters')
 
     # ------------------------------------------------------------------------------------
 
@@ -110,7 +120,11 @@ class Traitement:
             # create a sub image for each word in a temp directory
             """ After this we will go through each image to find each letter of each word"""
             sub_image = img_couleur.copy()[y:y2, x:x2, ::]
-            cv2.imwrite(name_directory + nom_image + "_" + str(increment) + ".jpg", sub_image)
+            if increment < 10:
+                cv2.imwrite(name_directory + nom_image + "_0" + str(increment) + ".jpg", sub_image)
+            else :
+                cv2.imwrite(name_directory + nom_image + "_" + str(increment) + ".jpg", sub_image)
+
             cv2.rectangle(result, (x, y), (x2, y2), (0, 0, 255), 2)
             # self.__print_image_opencv(result)
             increment += 1
@@ -126,7 +140,7 @@ class Traitement:
                 :return: retourne les rectangles autour des textes
                 """
         # use morphology erode to blur horizontally
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 10))
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (8, 10))
         morph = cv2.morphologyEx(image, cv2.MORPH_DILATE, kernel)
 
         return morph
@@ -155,9 +169,13 @@ class Traitement:
 
             if w*h > 250:
                 # create a sub image for each word in a temp directory
-                """ After this we will go through each image to find each letter of each word"""
+                """ After this we will go through each image to find each letter of each word
+                """
                 sub_image = img_couleur.copy()[y:y2, x:x2, ::]
-                cv2.imwrite(name_directory + nom_image + "_" + str(increment) + ".jpg", sub_image)
+                if increment < 10:
+                    cv2.imwrite(name_directory + nom_image + "_0" + str(increment) + ".jpg", sub_image)
+                else:
+                    cv2.imwrite(name_directory + nom_image + "_" + str(increment) + ".jpg", sub_image)
                 cv2.rectangle(result, (x, y), (x2, y2), (0, 0, 255), 2)
                 # self.__print_image_opencv(result)
                 increment += 1
@@ -197,6 +215,7 @@ class Traitement:
                                                       self.__directory_words)
 
         # passage mot par mot
+        self.__plot_images('words')
         word_images = os.listdir(self.__directory_words)
         for word_image_tile in word_images:
             self.__traitement_word(word_image_tile, width, height)
@@ -209,7 +228,7 @@ class Traitement:
                 :param image: image thresholdée
                 :return: retourne les rectangles autour des textes
                 """
-        # use morphology dilation to blur horizontally
+        # use morphology dilation to blur vertically
         kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (1, 12))
         morph = cv2.morphologyEx(image, cv2.MORPH_DILATE, kernel)
 
@@ -250,9 +269,12 @@ class Traitement:
             # apply a threshold to obtain only black and white color on the image
             sub_image = img_threshold[y:y2, x:x2]
             sub_image = self.__add_border_image(sub_image)
-            cv2.imwrite(name_directory + nom_image + "_" + str(increment) + ".jpg", sub_image)
+            sub_image = self.__changeSizeImages(28, 28, sub_image)
+            if increment < 10:
+                cv2.imwrite(name_directory + nom_image + "_0" + str(increment) + ".jpg", sub_image)
+            else:
+                cv2.imwrite(name_directory + nom_image + "_" + str(increment) + ".jpg", sub_image)
             cv2.rectangle(result, (x-2, y), (x2, y2), (0, 0, 255), 2)
-            # self.__print_image_opencv(result)
             increment += 1
 
         return result
@@ -267,6 +289,7 @@ class Traitement:
         replicate = cv2.copyMakeBorder(image, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=black)
         return replicate
 
+
     def __traitement_word(self, word_image_title, width, height):
         """
         :param sub_image_title:
@@ -278,12 +301,8 @@ class Traitement:
         word_image_gris = cv2.cvtColor(word_image, cv2.COLOR_BGR2GRAY)
         word_image_threshold = self.__binarisation(word_image_gris)
 
-        # self.__print_image_opencv(word_image_threshold)
-
         word_image_retour = self.__zonage_caracter(word_image_threshold)
-        # self.__print_image_opencv(word_image_retour)
-        # word_image_contour = self.__caracter_detection(word_image_threshold, word_image, name_word_image,
-        #                                            self.__directory_letters)
+
         sub_image_contour = self.__caracter_detection(word_image_retour, word_image, name_word_image,
                                                    self.__directory_letters)
 
@@ -293,6 +312,27 @@ class Traitement:
         return cv2.resize(image, (newSizeL, newSizeH), interpolation=cv2.INTER_LINEAR)
 
     # ------------------------------------------------------------------------------------
+    def __plot_images(self, repertoire):
+        list_images = os.listdir(repertoire)
+        nombre_images = len(list_images)
+        nb_colonnes = 5
+        nb_lignes = int(nombre_images / nb_colonnes)
+        if nombre_images % nb_colonnes > 0:
+            nb_lignes += 1
+
+        fig, ax = plt.subplots(nrows=nb_lignes, ncols=nb_colonnes, sharex=True, sharey=True)
+        ax = ax.flatten()
+
+        i = 0
+        for picture in list_images:
+            img = cv2.imread(repertoire+"/"+picture)
+            ax[i].imshow(img, cmap='Greys', interpolation='nearest')
+            i += 1
+        ax[0].set_xticks([])
+        ax[0].set_yticks([])
+        plt.tight_layout()
+        plt.show()
+
     def __print_image_opencv(self, image):
         """
             Affichage de l'image grâce à OpenCV
