@@ -74,6 +74,7 @@ class Fenetre:
         traitement.pretraitement()
 
     def __feed_word(self, mydoc):
+        # self.__reseau.test_predict()
         repertoire = "letters"
         if os.path.exists(repertoire):
             liste_images = os.listdir(repertoire)
@@ -87,7 +88,7 @@ class Fenetre:
             mot = 1
             lettre = 1
 
-            # debut_ligne = True
+            debut_ligne = True
             # in_word = False
 
             # Parcours de toutes les images et traitement sur chacune d'elles
@@ -106,18 +107,22 @@ class Fenetre:
                     mydoc.add_paragraph(texte_ligne)
                     texte_ligne = ""
                     ligne += 1
-                    # debut_ligne = True
+                    debut_ligne = True
                 elif num_mot != mot:
                     texte_ligne += " "
                     mot += 1
+                    debut_ligne = False
                     # in_word = False
-                # elif num_image > 1:
-                    # debut_ligne =
-                    # in_word =
+                else:
+                    debut_ligne = False
+                    # in_word = True
+
+                if num_image == 1:
+                    debut_ligne = True
 
                 image = cv2.imread(repertoire+"/"+str_image)
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                texte_ligne += self.__reseau.reality(image)
+                texte_ligne += self.__reseau.reality(image, debut_ligne)
 
                 # Check si on est a la derniere image du dossier lettres, si ou i
                 if num_image == len_repertoire:
