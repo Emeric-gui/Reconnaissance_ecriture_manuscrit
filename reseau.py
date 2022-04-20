@@ -187,7 +187,7 @@ class Classifier:
         print("image shape after resize:", image.shape)
         return image
 
-    def reality(self, image):
+    def reality(self, image, make_capi=False):
         """Va servir de fonction pour les prédictions"""
         image = self.__resize_image(image)
         pred = self.__model.predict(image)
@@ -210,6 +210,12 @@ class Classifier:
         pred_max_5 = np.argmax(np.delete(pred_delete_max_4, pred_max_4), axis=-1)
         pourcent_max_5 = np.amax(pred_delete_max_4, axis=-1)*100
 
+        if not make_capi:
+            if pred_max in range(10, 36):
+                pred_max = pred_max + 26
+        else:
+            if pred_max in range(36, 63):
+                pred_max = pred_max - 26
 
         val_retour = self.__dict_label.get(pred_max)
         val_retour_2 = self.__dict_label.get(pred_max_2)
