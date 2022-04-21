@@ -33,6 +33,7 @@ class Traitement:
         self.__name_image = "image"
 
         self.__image_couleur = cv2.imread(self.__cheminImage)
+        self.__image_couleur = self.__changeSizeImages(325, 250, self.__image_couleur)
 
     def pretraitement(self):
         """

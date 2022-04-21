@@ -4,7 +4,8 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-
+import tensorflow_datasets as tfds
+from tensorflow_datasets.core.visualization import show_examples
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -19,11 +20,15 @@ class Classifier:
 
     def __init__(self):
         np_config.enable_numpy_behavior()
-        self.__num_classes = 62
+        self.__num_classes = 37
         self.__input_shape = (28, 28, 1)
         self.__model = None
 
-        self.__dict_label = {
+        self.__is_juste_letters = True
+
+        # a = 97 ascii A = 65
+
+        self.__dict_label_all = {
             0: "0",
             1: "1",
             2: "2",
@@ -89,21 +94,59 @@ class Classifier:
             60: "y",
             61: "z"
         }
-
-        name_model = "cnn.h5"
+        self.__dict_label_letters = {
+            1: "A",
+            2: "B",
+            3: "C",
+            4: "D",
+            5: "E",
+            6: "F",
+            7: "G",
+            8: "H",
+            9: "I",
+            10: "J",
+            11: "K",
+            12: "L",
+            13: "M",
+            14: "N",
+            15: "O",
+            16: "P",
+            17: "Q",
+            18: "R",
+            19: "S",
+            20: "T",
+            21: "U",
+            22: "V",
+            23: "W",
+            24: "X",
+            25: "Y",
+            26: "Z",
+        }
+        name_model = "archi_lettre22.h5"
         if not os.path.exists(name_model):
             (self.__x_train, self.__y_train), (self.__x_test, self.__y_test) = emnist.load_data(
-                    type='byclass')
+                    type='letters')
+            # self.__plot_images()
             # self.__align_images()
             self.makeCNN()
         else:
             self.load_model(name_model)
 
     def __plot_images(self):
-        for image in self.__x_train:
-            cv2.imshow("window", image)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+        fig, ax = plt.subplots(nrows=10, ncols=4, sharex=True, sharey=True)
+        ax = ax.flatten()
+        for k in range(1, 27):
+            print("k : "+str(k))
+            img = self.__x_train[self.__y_train == k][0].reshape(28, 28)
+            ax[k].imshow(img, cmap='gray', interpolation='nearest')
+        ax[0].set_xticks([])
+        ax[0].set_yticks([])
+        plt.tight_layout()
+        plt.show()
+        # for image in self.__x_train:
+            # cv2.imshow("window", image)
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
 
     def __scales_images(self):
         # Scale images to the [0, 1] range
@@ -145,8 +188,8 @@ class Classifier:
         # plot_model(self.__model)
 
     def __fit_generator(self):
-        batch_size = 1024
-        epochs = 15
+        batch_size = 256
+        epochs = 20
 
         self.__model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
         self.__model.fit(self.__x_train, self.__y_train, batch_size=batch_size, epochs=epochs, validation_split=0.1)
@@ -158,7 +201,7 @@ class Classifier:
 
     def __save_model(self):
         """Save the model in order to use it later"""
-        self.__model.save('archi_finale.h5')
+        self.__model.save('archi_lettre22.h5')
 
     def makeCNN(self):
         """Only for training"""
@@ -210,22 +253,45 @@ class Classifier:
         pred_max_5 = np.argmax(np.delete(pred_delete_max_4, pred_max_4), axis=-1)
         pourcent_max_5 = np.amax(pred_delete_max_4, axis=-1)*100
 
-        if not make_capi:
-            if pred_max in range(10, 36):
-                pred_max = pred_max + 26
-        else:
-            if pred_max in range(36, 63):
-                pred_max = pred_max - 26
+        val_retour = None
 
-        val_retour = self.__dict_label.get(pred_max)
-        val_retour_2 = self.__dict_label.get(pred_max_2)
-        val_retour_3 = self.__dict_label.get(pred_max_3)
-        val_retour_4 = self.__dict_label.get(pred_max_4)
-        val_retour_5 = self.__dict_label.get(pred_max_5)
+        if not self.__is_juste_letters:
+
+            if not make_capi:
+                if pred_max in range(10, 36):
+                    pred_max = pred_max + 26
+            else:
+                if pred_max in range(36, 63):
+                    pred_max = pred_max - 26
+            val_retour = self.__dict_label_all.get(pred_max)
+
+        else:
+            lettre = self.__dict_label_letters.get(pred_max)
+
+            if not make_capi:
+                if 65 <= ord(lettre) <= 90:
+                    val_lettre = ord(lettre) + 32
+                    val_retour = chr(val_lettre)
+                else:
+                    val_retour = lettre
+
+            else:
+                if 97 <= ord(lettre) <= 122:
+                    val_lettre = ord(lettre) - 32
+                    val_retour = chr(val_lettre)
+                else:
+                    val_retour = lettre
+
+
+
+        # val_retour_2 = self.__dict_label_all.get(pred_max_2)
+        # val_retour_3 = self.__dict_label_all.get(pred_max_3)
+        # val_retour_4 = self.__dict_label_all.get(pred_max_4)
+        # val_retour_5 = self.__dict_label_all.get(pred_max_5)
         print("retour 1 : {0} | {1} %".format(val_retour, pourcent_max))
-        print("retour 2 : {0} | {1} %".format(val_retour_2, pourcent_max_2))
-        print("retour 3 : {0} | {1} %".format(val_retour_3, pourcent_max_3))
-        print("retour 4 : {0} | {1} %".format(val_retour_4, pourcent_max_4))
-        print("retour 5 : {0} | {1} %".format(val_retour_5, pourcent_max_5))
+        # print("retour 2 : {0} | {1} %".format(val_retour_2, pourcent_max_2))
+        # print("retour 3 : {0} | {1} %".format(val_retour_3, pourcent_max_3))
+        # print("retour 4 : {0} | {1} %".format(val_retour_4, pourcent_max_4))
+        # print("retour 5 : {0} | {1} %".format(val_retour_5, pourcent_max_5))
 
         return val_retour
