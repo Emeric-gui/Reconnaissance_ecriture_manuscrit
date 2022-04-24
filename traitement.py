@@ -1,14 +1,16 @@
 import os
 
 import matplotlib.pyplot as plt
-import numpy as np
 import cv2
 import matplotlib.pyplot as plot
-import tensorflow as tf
 
 
 class Traitement:
     def __init__(self, cheminImage):
+        """
+            Constructeur
+        :param cheminImage: chemin vers l'image
+        """
         self.__directory_sub_images = "sub_images/"
         self.__directory_words = "words/"
         self.__directory_letters = "letters/"
@@ -41,21 +43,17 @@ class Traitement:
         """
         # Image
         self.__image_gris = cv2.cvtColor(self.__image_couleur, cv2.COLOR_BGR2GRAY)
-        # self.__image_gris = self.__lissage(self.__image_gris)
-
         self.__image_threshold = self.__binarisation(self.__image_gris)
-        # self.__print_image_opencv(self.__image_threshold)
         imageRetour = self.__zonage(self.__image_threshold)
-        # self.__print_image_opencv(imageRetour)
-        self.__image_contour, width, height = self.__lines_detection(imageRetour, self.__image_couleur.copy(),
-                                                                     self.__name_image,
-                                                                     self.__directory_sub_images)
+        self.__image_contour = self.__lines_detection(imageRetour, self.__image_couleur.copy(),
+                                                      self.__name_image,
+                                                      self.__directory_sub_images)
 
         # Sous-images
         self.__plot_images('sub_images')
         sub_images = os.listdir(self.__directory_sub_images)
         for sub_image_tile in sub_images:
-            self.__traitement_sub(sub_image_tile, width, height)
+            self.__traitement_sub(sub_image_tile)
             os.remove(self.__directory_sub_images + sub_image_tile)
 
         # Afficher toutes les lettres dans un plot
@@ -72,13 +70,6 @@ class Traitement:
         :return: l'image thresholdée
         """
         return cv2.threshold(image, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
-
-    def __lissage(self, image):
-        """
-        Lissage des bords et enlève les taches
-        :return: retourne les blocs d'images
-        """
-        return image
 
     def __zonage(self, image):
         """
@@ -98,10 +89,11 @@ class Traitement:
 
     def __lines_detection(self, img_retour, img_couleur, nom_image, name_directory):
         """
-            Detection de lignes et de mots
+            Detection des lignes
         :param img_retour:
         :param img_couleur:
-        :param words:
+        :param nom_image:
+        :param name_directory:
         :return: image couleur avec les contours
         """
         w, h = 0, 0
@@ -123,23 +115,22 @@ class Traitement:
             sub_image = img_couleur.copy()[y:y2, x:x2, ::]
             if increment < 10:
                 cv2.imwrite(name_directory + nom_image + "_0" + str(increment) + ".jpg", sub_image)
-            else :
+            else:
                 cv2.imwrite(name_directory + nom_image + "_" + str(increment) + ".jpg", sub_image)
 
             cv2.rectangle(result, (x, y), (x2, y2), (0, 0, 255), 2)
-            # self.__print_image_opencv(result)
             increment += 1
 
-        return result, w, h
+        return result
 
     # ------------------------------------------------------------------------------------
 
     def __zonage_sub(self, image):
         """
-                    Forme les rectangle autour des pixels blancs
-                :param image: image thresholdée
-                :return: retourne les rectangles autour des textes
-                """
+            Forme les rectangles autour des pixels blancs
+        :param image: image thresholdée
+        :return: retourne les rectangles autour des textes
+        """
         # use morphology erode to blur horizontally
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (8, 10))
         morph = cv2.morphologyEx(image, cv2.MORPH_DILATE, kernel)
@@ -148,10 +139,11 @@ class Traitement:
 
     def __words_detection(self, img_retour, img_couleur, nom_image, name_directory):
         """
-            Detection de lignes et de mots
+            Detection des mots
         :param img_retour:
         :param img_couleur:
-        :param words:
+        :param nom_image:
+        :param name_directory: nom du répertoire où seront stockées les images des mots
         :return:
         """
         # find contours
@@ -168,7 +160,7 @@ class Traitement:
             x2 = x + w
             y2 = y + h + 5
 
-            if w*h > 250:
+            if w * h > 250:
                 # create a sub image for each word in a temp directory
                 """ After this we will go through each image to find each letter of each word
                 """
@@ -178,7 +170,6 @@ class Traitement:
                 else:
                     cv2.imwrite(name_directory + nom_image + "_" + str(increment) + ".jpg", sub_image)
                 cv2.rectangle(result, (x, y), (x2, y2), (0, 0, 255), 2)
-                # self.__print_image_opencv(result)
                 increment += 1
 
         return result
@@ -186,7 +177,7 @@ class Traitement:
     def __stabilize_contours(self, contours):
         """
            Pour trier l'ordre des mots dans la ligne, pour aller de gauche a droite
-        :param contours:
+        :param contours: Contours trouvés dans l'image
         :return:
         """
         # Tri a bulles pour trier les valeurs selon le x
@@ -201,40 +192,43 @@ class Traitement:
                     contours[j + 1] = temp
         return contours
 
-    def __traitement_sub(self, sub_image_title, width, height):
+    def __traitement_sub(self, sub_image_title):
+        """
+            Traite les différentes sous-images, c'est à dire la détection de mots à partir des lignes trouvées
+            précédemment
+        :param sub_image_title: nom de l'image
+        :return:
+        """
         name_sub_image = sub_image_title.split(".")[0]
-
         sub_image = cv2.imread(self.__directory_sub_images + sub_image_title)
+
         sub_image_gris = cv2.cvtColor(sub_image, cv2.COLOR_BGR2GRAY)
         sub_image_threshold = self.__binarisation(sub_image_gris)
 
-        # self.__print_image_opencv(sub_image_threshold)
-
         sub_image_retour = self.__zonage_sub(sub_image_threshold)
-        # self.__print_image_opencv(sub_image_retour)
-        sub_image_contour = self.__words_detection(sub_image_retour, sub_image, name_sub_image,
-                                                      self.__directory_words)
 
-        # passage mot par mot
+        self.__words_detection(sub_image_retour, sub_image, name_sub_image,
+                               self.__directory_words)
+
+        # Après avoir trouvés les mots, on va chercher les caractères
         self.__plot_images('words')
         word_images = os.listdir(self.__directory_words)
         for word_image_tile in word_images:
-            self.__traitement_word(word_image_tile, width, height)
+            self.__traitement_word(word_image_tile)
             os.remove(self.__directory_words + word_image_tile)
 
     # ------------------------------------------------------------------------------------
     def __zonage_caracter(self, image):
         """
-                    Forme les rectangle autour des pixels blancs
-                :param image: image thresholdée
-                :return: retourne les rectangles autour des textes
-                """
+            Forme les rectangle autour des pixels blancs
+        :param image: image thresholdée
+        :return: retourne les rectangles autour des textes
+        """
         # use morphology dilation to blur vertically
         kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (1, 12))
         morph = cv2.morphologyEx(image, cv2.MORPH_DILATE, kernel)
 
-
-        #erosion pour réduire la taille des élements
+        # erosion pour réduire la taille des élements
         kernel_erode = cv2.getStructuringElement(cv2.MORPH_CROSS, (2, 2))
         morph = cv2.morphologyEx(morph, cv2.MORPH_ERODE, kernel_erode)
 
@@ -275,7 +269,7 @@ class Traitement:
                 cv2.imwrite(name_directory + nom_image + "_0" + str(increment) + ".jpg", sub_image)
             else:
                 cv2.imwrite(name_directory + nom_image + "_" + str(increment) + ".jpg", sub_image)
-            cv2.rectangle(result, (x-2, y), (x2, y2), (0, 0, 255), 2)
+            cv2.rectangle(result, (x - 2, y), (x2, y2), (0, 0, 255), 2)
             increment += 1
 
         return result
@@ -290,8 +284,7 @@ class Traitement:
         replicate = cv2.copyMakeBorder(image, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=black)
         return replicate
 
-
-    def __traitement_word(self, word_image_title, width, height):
+    def __traitement_word(self, word_image_title):
         """
         :param sub_image_title:
         :return:
@@ -304,16 +297,28 @@ class Traitement:
 
         word_image_retour = self.__zonage_caracter(word_image_threshold)
 
-        sub_image_contour = self.__caracter_detection(word_image_retour, word_image, name_word_image,
-                                                   self.__directory_letters)
+        self.__caracter_detection(word_image_retour, word_image, name_word_image,
+                                  self.__directory_letters)
 
     # ------------------------------------------------------------------------------------
 
     def __changeSizeImages(self, newSizeH, newSizeL, image):
+        """
+            Changer la taille d'une image tout en gardant un maximum de clarté par rapport à l'image originale
+        :param newSizeH: nouvelle hauteur
+        :param newSizeL: nouvelle longueur
+        :param image: image à modifier
+        :return: la nouvelle image avec sa nouvelle taille
+        """
         return cv2.resize(image, (newSizeL, newSizeH), interpolation=cv2.INTER_LINEAR)
 
     # ------------------------------------------------------------------------------------
     def __plot_images(self, repertoire):
+        """
+            Afficher les différentes images contenues dans un répertoire
+        :param repertoire: chemin vers le répertoire
+        :return:
+        """
         list_images = os.listdir(repertoire)
         nombre_images = len(list_images)
         nb_colonnes = 5
@@ -326,7 +331,7 @@ class Traitement:
 
         i = 0
         for picture in list_images:
-            img = cv2.imread(repertoire+"/"+picture)
+            img = cv2.imread(repertoire + "/" + picture)
             ax[i].imshow(img, cmap='Greys', interpolation='nearest')
             i += 1
         ax[0].set_xticks([])
@@ -401,14 +406,14 @@ class Traitement:
         plot.title(self.__name_image)
         plot.show()
 
-    def show_image(self):
-        # self.__image_threshold = self.__changeSizeImages(500, 500, self.__image_threshold)
-        self.__print_image_opencv(self.__image_contour)
-        # self.__print_image_matplot(self.__image_couleur)
-
-        # self.__print_image_matplot(self.__image_gray)
-        # self.__show_histogram_image(self.__image_gray)
-        #
-        self.__print_multiple_images_matplot(self.__image_threshold, self.__image_contour)
+    def show_image(self, image1, image2):
+        """
+            Appel des différentes fonctions selon la méthode d'affichage choisie
+        :param image1:
+        :param image2:
+        :return:
+        """
+        self.__print_image_opencv(image1)
+        self.__print_multiple_images_matplot(image2, image1)
         return None
     # ------------------------------------------------------------------------------------

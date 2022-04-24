@@ -14,7 +14,10 @@ from reseau import Classifier
 
 
 class Fenetre:
-    def __init__(self):
+    def __init__(self, is_letter):
+        """
+            Construction de la fenetre avec ses boutons
+        """
         self.__filename = None
         self.__window = tk.Tk()
         self.__window.geometry("500x500")  # Size of the window
@@ -25,9 +28,14 @@ class Fenetre:
         b1 = tk.Button(self.__window, text='Upload Files', width=20, command=lambda: self.__upload_file())
         b1.grid(row=3, column=1)  # on met le bouton en dessous du texte soit en ligne 2 colonne 2
 
-        self.__reseau = Classifier()
+        self.__reseau = Classifier(is_letter)
 
     def __upload_file(self):
+        """
+            callback appelé lors du click sur le bouton Upload Files
+            Permet de "télécharger" l'image pour qu'elle soit traité par le programme
+        :return:
+        """
         file_types = [('Images', '*.jpg;*.png;*.jpeg'),
                       ('All', '*.*')]  # type of files to select
         self.__filename = tk.filedialog.askopenfilename(title="Choisir une image", filetypes=file_types)
@@ -45,9 +53,11 @@ class Fenetre:
         except AttributeError:
             print("Pas de fichier envoyé")
 
-
-
     def __imgToTxt(self):
+        """
+            Callback si souhait de transformer le texte de l'imge en un texte dans un word
+        :return:
+        """
         # on apply ici la fonction de traitement de l'image
         self.__applyTraitement(self.__filename)
         mydoc = docx.Document()  # on ouvre le word / le crée s'il existe pas
@@ -65,16 +75,29 @@ class Fenetre:
         print("Document fini")
 
     def activateWindow(self):
+        """
+            Pour maintenir la fenetre ouverte
+        :return:
+        """
         self.__window.mainloop()  # Keep the window open
 
     def __applyTraitement(self, image):
+        """
+            Traitement effectués sur l'image pour déterminer les carctères qui la contiennent
+        :param image:
+        :return:
+        """
         print("Image : {0}".format(image))
         cheminImage = image
         traitement = Traitement(cheminImage)
         traitement.pretraitement()
 
     def __feed_word(self, mydoc):
-        # self.__reseau.test_predict()
+        """
+            Pour ajouter les différentes lignes trouvés dans le document word
+        :param mydoc: document word dans lequels seront stockés les lignes trouvées
+        :return:
+        """
         repertoire = "letters"
         if os.path.exists(repertoire):
             liste_images = os.listdir(repertoire)
@@ -89,7 +112,6 @@ class Fenetre:
             lettre = 1
 
             debut_ligne = True
-            # in_word = False
 
             # Parcours de toutes les images et traitement sur chacune d'elles
             for str_image in liste_images:
@@ -112,10 +134,8 @@ class Fenetre:
                     texte_ligne += " "
                     mot += 1
                     debut_ligne = False
-                    # in_word = False
                 else:
                     debut_ligne = False
-                    # in_word = True
 
                 if num_image == 1:
                     debut_ligne = True

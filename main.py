@@ -1,8 +1,10 @@
 """
-    Permet de lancer la fenetre du logiciel
+    Permet de lancer la fenetre du logiciel et le programme au global
 """
 
 from interface import Fenetre
 
-fenetre = Fenetre()
+letter = True
+
+fenetre = Fenetre(letter)
 fenetre.activateWindow()
